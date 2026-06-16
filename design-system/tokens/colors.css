@@ -1,0 +1,71 @@
+/* nestia. — Color system
+   Dusty pink · brown · greige. Gentle, refined, calm.
+   Petal Rouge (#FF7D9B) is a strict accent: CTAs and tiny ornaments only. */
+
+:root {
+  /* ---- Base palette ---------------------------------------------------- */
+  /* Primary */
+  --plum: #77524E;        /* Chocolate Plum — headings, primary surfaces */
+  --rose: #886867;        /* Smoky Rose — secondary text, hover plum */
+
+  /* Secondary */
+  --almond: #DBB6AB;      /* Almond Silk — soft fills, tags */
+  --taupe: #AC9B90;       /* Taupe — muted UI, dividers on dark */
+
+  /* Background */
+  --dust: #D0CCC9;        /* Dust Grey — sunken surfaces, sections */
+  --cream: #F8F4F1;       /* off-white — page background */
+
+  /* Accent — brand spark (decorative only) */
+  --petal: #FF7D9B;       /* Brand Accent — petals, dots, tiny marks, soft washes, price-side accent */
+
+  /* Tints & shades derived from the palette (oklch-harmonized) */
+  --plum-700: #5E3F3C;    /* darker plum — pressed, deep type */
+  --plum-300: #A98884;    /* lighter plum */
+  --almond-200: #ECDCD5;  /* pale almond — soft chips, hover fills */
+  --almond-100: #F4E9E4;  /* faintest almond wash */
+  --petal-soft: #FFE3EA;  /* petal wash — accent backgrounds */
+  --petal-deep: #E85F7E;  /* petal hover/pressed (decorative) */
+
+  /* Accessible Pink — interactive & text use (meets WCAG contrast) */
+  --petal-accessible: #C73A63;      /* CTA bg, outline text+border, badge text, booking emphasis */
+  --petal-accessible-700: #A82C50;  /* accessible-pink hover/pressed */
+
+  /* Neutrals (warm) */
+  --white: #FFFFFF;
+  --ink: #3C2E2B;         /* warm near-black — strongest text */
+  --ink-soft: #5C4A46;    /* body text */
+  --line: #E7DCD6;        /* hairline borders on light */
+  --line-soft: #F0E7E2;   /* faintest divider */
+
+  /* ---- Semantic aliases ------------------------------------------------ */
+  --text-strong: var(--plum);
+  --text-body: var(--ink-soft);
+  --text-muted: #7C6A64;
+  --text-on-dark: var(--cream);
+  --text-on-dark-muted: #D9C9C3;
+
+  --surface-page: var(--cream);
+  --surface-card: var(--white);
+  --surface-sunken: var(--dust);
+  --surface-soft: var(--almond-100);
+  --surface-dark: var(--plum);
+  --surface-dark-alt: var(--rose);
+
+  --border: var(--line);
+  --border-strong: var(--almond);
+
+  --cta-bg: var(--petal-accessible);     /* Primary CTA = Accessible Pink fill */
+  --cta-bg-hover: var(--petal-accessible-700);
+  --cta-text: #ffffff;                   /* white text on accessible pink */
+
+  --accent: var(--petal);          /* decorative spark (dots, period, washes) */
+  --accent-text: var(--petal-accessible);  /* interactive/text accent (contrast-safe) */
+  --accent-hover: var(--petal-accessible-700);
+  --accent-soft: var(--petal-soft);
+
+  --focus-ring: color-mix(in oklch, var(--petal-accessible) 60%, transparent);
+
+  --price-strike: var(--text-muted);
+  --price-now: var(--plum);
+}

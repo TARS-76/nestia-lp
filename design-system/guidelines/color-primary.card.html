@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Primary & Accent" subtitle="Chocolate Plum, Smoky Rose — and the strict Petal accent" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 24px; background: var(--surface-page); }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .sw { width: 158px; border-radius: var(--r-md); overflow: hidden; box-shadow: var(--shadow-sm); background: var(--white); }
+  .chip { height: 78px; }
+  .meta { padding: 10px 12px 12px; }
+  .nm { font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--ink); }
+  .hex { font-family: var(--font-body); font-size: 11px; letter-spacing: .04em; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
+  .tag { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; display: block; }
+</style>
+</head>
+<body>
+  <span class="tag">Primary · Accent</span>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--plum)"></div><div class="meta"><div class="nm">Chocolate Plum</div><div class="hex">#77524E</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--rose)"></div><div class="meta"><div class="nm">Smoky Rose</div><div class="hex">#886867</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--petal)"></div><div class="meta"><div class="nm">Petal Rouge · accent</div><div class="hex">#FF7D9B</div></div></div>
+  </div>
+</body>
+</html>

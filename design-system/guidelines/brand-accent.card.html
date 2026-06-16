@@ -1,0 +1,48 @@
+<!-- @dsCard group="Brand" viewport="700x230" name="Accent Discipline" subtitle="Petal Rouge fills the primary CTA; Plum carries type & structure" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 26px 32px; background: var(--surface-page); font-family: var(--font-body); }
+  .wrap { display: flex; gap: 28px; align-items: flex-start; }
+  .col { flex: 1; }
+  .eyebrow { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+  .demo { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .cta { display: inline-flex; align-items: center; gap: 8px; padding: 13px 26px; border-radius: var(--r-pill); font-size: 14px; font-weight: 500; letter-spacing: .04em; }
+  /* Primary CTA = accessible pink fill, white text */
+  .cta.primary { background: var(--petal-accessible); color: #fff; }
+  /* Accent / emphasis = knockout: white fill, accessible-pink text + border */
+  .cta.knock { background: var(--white); color: var(--petal-accessible); border: 1px solid var(--petal-accessible); }
+  .price { font-family: var(--font-serif-jp); font-size: 20px; }
+  .price b { color: var(--petal-accessible); font-weight: 700; white-space: nowrap; }
+  .price s { color: var(--text-muted); font-weight: 400; font-size: 15px; }
+  .heading { font-family: var(--font-serif-jp); font-size: 19px; color: var(--plum); font-weight: 600; }
+  .heading em { font-style: normal; color: var(--petal-deep); }
+  .rule { font-size: 12.5px; color: var(--ink-soft); line-height: 1.7; margin-top: 14px; }
+  .dot { width:8px;height:8px;border-radius:50%;background:var(--petal);display:inline-block; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="col">
+      <div class="eyebrow">Primary CTA = Accessible Pink #C73A63 fill</div>
+      <div class="demo"><span class="cta primary">ご予約はこちら</span></div>
+
+      <div class="eyebrow" style="margin-top:22px">Accent / emphasis = knockout (#C73A63)</div>
+      <div class="demo">
+        <span class="cta knock">本日空きあり</span>
+        <span class="price"><s>9,400円</s> → <b>7,800円</b></span>
+        <span class="dot"></span>
+      </div>
+
+      <div class="eyebrow" style="margin-top:22px">Plum = headings, text emphasis, structure</div>
+      <div class="heading">今日の<em>あなた</em>に合わせて</div>
+    </div>
+    <div class="col">
+      <div class="rule"><b>Two pinks.</b> Brand Accent <b style="color:var(--petal)">#FF7D9B</b> stays decorative — petals, the sakura dot, soft washes, the mark beside a price. <b style="color:var(--petal-accessible)">Accessible Pink #C73A63</b> does the work that must read: the <b>primary CTA fill</b> (white text), the <b>knockout</b> emphasis (white fill, pink text + border), small badge text, and booking-funnel stress. Chocolate Plum carries headings, body emphasis and secondary CTAs. Body text ≥ 4.5:1, UI &amp; borders ≥ 3:1.</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!-- @dsCard group="Brand" viewport="700x240" name="Logo Lockup" subtitle="Wordmark, period mark, and tagline lockup" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 0; background: var(--surface-page); display: grid; grid-template-columns: 1fr 1fr; min-height: 240px; }
+  .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .dark { background: var(--plum); }
+  .lock { text-align: center; line-height: 1; }
+  .mark { font-family: var(--font-display); font-weight: 500; font-size: 52px; letter-spacing: var(--ls-wordmark); }
+  .mark .dot { color: var(--accent); }
+  .tagline { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 17px; letter-spacing: .08em; margin-top: 4px; white-space: nowrap; }
+  .light .mark { color: var(--plum); }
+  .light .tagline { color: var(--rose); }
+  .dark .mark { color: var(--cream); }
+  .dark .tagline { color: var(--almond); }
+</style>
+</head>
+<body>
+  <div class="cell light">
+    <div class="lock"><div class="mark">nestia<span class="dot">.</span></div><div class="tagline">relaxation salon</div></div>
+  </div>
+  <div class="cell dark">
+    <div class="lock"><div class="mark">nestia<span class="dot">.</span></div><div class="tagline">relaxation salon</div></div>
+  </div>
+</body>
+</html>

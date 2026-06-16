@@ -1,0 +1,88 @@
+/* nestia. — Base element defaults & a few utility primitives.
+   Light-touch resets so specimens & kits inherit the brand by default. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  letter-spacing: var(--ls-body);
+  color: var(--text-body);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings default to display serif */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--text-strong);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+  margin: 0;
+}
+
+p { margin: 0; }
+
+a {
+  color: var(--plum);
+  text-decoration: none;
+  transition: color var(--dur) var(--ease);
+}
+a:hover { color: var(--accent-text); }
+
+/* ---- Button hover / press ---------------------------------------------- */
+.n-btn--primary:not(:disabled):hover { background: var(--cta-bg-hover); }
+.n-btn--accent:not(:disabled):hover  { background: var(--petal-soft); }
+.n-btn--outline:not(:disabled):hover,
+.n-btn--ghost:not(:disabled):hover   { background: var(--almond-100); }
+.n-btn:not(:disabled):active         { transform: translateY(0.5px); }
+
+/* ---- Mobile: stack the signature menu card (inline grid needs !important) */
+@media (max-width: 480px) {
+  .n-menu-card { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .n-menu-card > div:first-child { width: 100% !important; height: 180px !important; }
+}
+
+/* ---- Utility primitives ------------------------------------------------ */
+
+/* Wide-tracked uppercase Latin micro-label — a signature nestia. device */
+.n-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Japanese serif lead line */
+.n-jp-serif {
+  font-family: var(--font-serif-jp);
+  letter-spacing: var(--ls-jp);
+  line-height: var(--lh-relaxed);
+}
+
+/* The thin hairline rule used under section headers */
+.n-rule {
+  height: 1px;
+  border: 0;
+  background: var(--border);
+}
+
+/* Soft petal-wash divider blob accent (decorative) */
+.n-sakura-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-circle);
+  background: var(--accent);
+  display: inline-block;
+}

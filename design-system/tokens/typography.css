@@ -1,0 +1,41 @@
+/* nestia. — Typography scale
+   Display serif for atmosphere, gothic for legibility.
+   Generous line-height & letter-spacing — the brand breathes. */
+
+:root {
+  /* Families */
+  --font-display: 'Cormorant Garamond', 'Shippori Mincho', serif;
+  --font-serif-jp: 'Shippori Mincho', 'Cormorant Garamond', serif;
+  --font-body: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+
+  /* Weights */
+  --fw-light: 300; /* @kind font */
+  --fw-regular: 400; /* @kind font */
+  --fw-medium: 500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold: 700; /* @kind font */
+
+  /* Type scale (rem, 16px base) */
+  --fs-display: 4.5rem;   /* 72 — hero wordmark moments */
+  --fs-h1: 3rem;          /* 48 */
+  --fs-h2: 2.25rem;       /* 36 */
+  --fs-h3: 1.625rem;      /* 26 */
+  --fs-h4: 1.25rem;       /* 20 */
+  --fs-lead: 1.125rem;    /* 18 — lead copy */
+  --fs-body: 1rem;        /* 16 */
+  --fs-sm: 0.875rem;      /* 14 */
+  --fs-xs: 0.75rem;       /* 12 — labels, captions */
+
+  /* Line heights */
+  --lh-tight: 1.12; /* @kind font */
+  --lh-snug: 1.35; /* @kind font */
+  --lh-normal: 1.7; /* @kind font */
+  --lh-relaxed: 1.9; /* @kind font */
+
+  /* Letter spacing — wide tracking is a core nestia. mannerism */
+  --ls-display: 0.04em;
+  --ls-wordmark: 0.02em;
+  --ls-label: 0.22em;     /* the wide-tracked all-caps Latin labels */
+  --ls-body: 0.02em;
+  --ls-jp: 0.06em;        /* JP text gets gentle tracking */
+}
