@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+nestia-animation-source*.svg
+nestia-svg-main.svg
+nestia-trace-experiment.patch
+app/butterfly-flight-test/
+app/butterfly-test/
+components/Butterfly*.tsx
+components/HeroButterfly.tsx
+components/NestiaHandwritingLogo.before-e.tsx
+components/NestiaHandwritingLogo.trace-experiment.tsx
