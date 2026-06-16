@@ -152,8 +152,8 @@ body {
 }
 .hero__cta {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--sp-4);
 }
 
 /* Problem */

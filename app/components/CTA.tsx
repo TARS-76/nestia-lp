@@ -1,13 +1,20 @@
+import { CTA as ctaConfig } from '@/lib/cta-config'
+
 export function CTA() {
   return (
     <section className="cta">
       <div className="cta__inner">
-        <a href="__HPB_RESERVE_URL__" className="btn-primary btn-primary--large">
-          HPBで空き状況を見る
+        <a href={ctaConfig.primary.href} className="btn-primary btn-primary--large">
+          {ctaConfig.primary.label}
         </a>
-        <a href="__LINE_URL__" className="btn-secondary">
-          LINEで相談する｜友だち追加で500円OFF
+        <a href={ctaConfig.secondary.href} className="btn-secondary">
+          {ctaConfig.secondary.label}
         </a>
+        {ctaConfig.tel.published && (
+          <a href={ctaConfig.tel.href} className="btn-tel">
+            {ctaConfig.tel.label}
+          </a>
+        )}
       </div>
     </section>
   )
