@@ -1,3 +1,6 @@
+import { CTA as ctaConfig } from '@/lib/cta-config'
+import { Button } from '@/design-system/components/core/Button'
+
 export function Hero() {
   return (
     <section className="hero">
@@ -13,12 +16,12 @@ export function Hero() {
           その日の身体と気分に合わせたオーダーメイドケア。
         </p>
         <div className="hero__cta">
-          <a href="__HPB_RESERVE_URL__" className="btn-primary">
-            空き状況を見る
-          </a>
-          <a href="__LINE_URL__" className="btn-secondary">
-            LINEで相談する
-          </a>
+          <Button as="a" href={ctaConfig.primary.href} variant="primary">
+            {ctaConfig.primary.label}
+          </Button>
+          <Button as="a" href={ctaConfig.secondary.href} variant="outline">
+            {ctaConfig.secondary.label}
+          </Button>
         </div>
       </div>
     </section>
