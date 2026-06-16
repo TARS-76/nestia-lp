@@ -1,80 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 @import url('../design-system/styles.css');
 @import "tailwindcss";
 
+/* LP-specific layout variables (no DS equivalent) */
 :root {
-  /* カラー */
-  --color-bg:        #F4EFE9;
-  --color-surface:   #FFFFFF;
-  --color-text-main: #6E5F50;
-  --color-text-sub:  #9C8E7E;
-  --color-primary:   #C9A8A0;
-  --color-accent:    #C2A878;
-
-  /* フォント */
-  --font-en:      'Cormorant Garamond', 'Georgia', serif;
-  --font-ja-main: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
-  --font-ja-sub:  'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
-
-  /* テキストサイズ */
-  --text-xs:   0.75rem;
-  --text-sm:   0.875rem;
-  --text-base: 1rem;
-  --text-lg:   1.125rem;
-  --text-xl:   1.25rem;
-  --text-2xl:  1.5rem;
-  --text-3xl:  1.875rem;
-  --text-4xl:  2.25rem;
-  --text-5xl:  3rem;
-
-  /* 行間・字間 */
-  --leading-tight:   1.35;
-  --leading-normal:  1.7;
-  --leading-relaxed: 1.9;
-  --tracking-wide:   0.06em;
-  --tracking-widest: 0.15em;
-
-  /* スペーシング */
-  --space-2:  0.5rem;
-  --space-3:  0.75rem;
-  --space-4:  1rem;
-  --space-6:  1.5rem;
-  --space-8:  2rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
-  --space-24: 6rem;
-  --section-py: var(--space-20);
-
-  /* ブレークポイント・コンテナ */
   --container-max: 720px;
   --container-px:  1.25rem;
+  --section-py:    5rem;
 }
 
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text-main);
-  font-family: var(--font-ja-main);
+/* DS component spacing for LP sections */
+.n-section-header {
+  margin-bottom: var(--sp-6);
 }
-
-/* ベーススタイル */
-.eyebrow {
-  font-family: var(--font-en);
-  font-size: var(--text-sm);
-  letter-spacing: var(--tracking-widest);
-  text-transform: lowercase;
-  color: var(--color-primary);
+.story__inner .n-eyebrow {
   display: block;
-  margin-bottom: var(--space-4);
-}
-
-.section-title {
-  font-family: var(--font-ja-main);
-  font-size: var(--text-3xl);
-  font-weight: 600;
-  line-height: var(--leading-tight);
-  color: var(--color-text-main);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--sp-4);
 }
 
 /* コンテナ共通 */
@@ -89,66 +29,20 @@ body {
   padding: var(--section-py) var(--container-px);
 }
 
-/* ボタン（design-system §2/§3: primary = accessible pink fill, secondary = plum outline） */
-.btn-primary {
-  display: inline-block;
-  font-family: var(--font-ja-sub);
-  font-size: var(--text-base);
-  font-weight: 700;
-  letter-spacing: var(--tracking-wide);
-  background-color: var(--petal-accessible);
-  color: #fff;
-  padding: 0.875rem 2rem;
-  border-radius: 2px;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
-}
-.btn-primary:hover { background-color: var(--petal-accessible-700); }
-
-.btn-secondary {
-  display: inline-block;
-  font-family: var(--font-ja-sub);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  letter-spacing: var(--tracking-wide);
-  color: var(--plum);
-  border: 1px solid var(--plum);
-  padding: 0.75rem 1.75rem;
-  border-radius: 2px;
-  text-decoration: none;
-}
-
-.btn-tel {
-  display: inline-block;
-  font-family: var(--font-ja-sub);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  letter-spacing: var(--tracking-wide);
-  color: var(--plum);
-  padding: 0.75rem 1.75rem;
-  text-decoration: none;
-}
-
 /* Hero */
-.hero__eyebrow {
-  font-family: var(--font-en);
-  font-size: var(--text-xl);
-  letter-spacing: var(--tracking-widest);
-  color: var(--color-primary);
-}
 .hero__title {
-  font-family: var(--font-ja-main);
-  font-size: var(--text-4xl);
-  font-weight: 600;
-  line-height: var(--leading-tight);
-  color: var(--color-text-main);
-  margin: var(--space-4) 0;
+  font-family: var(--font-serif-jp);
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  color: var(--text-strong);
+  margin: var(--sp-4) 0;
 }
 .hero__sub {
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-  color: var(--color-text-sub);
-  margin-bottom: var(--space-8);
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+  margin-bottom: var(--sp-6);
 }
 .hero__cta {
   display: flex;
@@ -156,57 +50,74 @@ body {
   gap: var(--sp-4);
 }
 
+/* Story */
+.story__text {
+  font-family: var(--font-serif-jp);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-relaxed);
+  letter-spacing: var(--ls-jp);
+  color: var(--text-body);
+}
+.story__text p[data-state="pending"]  { color: var(--surface-sunken); }
+.story__text p[data-state="active"]   { color: var(--text-body); }
+.story__text p[data-state="past"]     { color: var(--text-muted); }
+.story__text p {
+  transition: color var(--dur-slow) var(--ease);
+  min-height: 1.4em;
+}
+
 /* Problem */
 .problem__list { list-style: none; padding: 0; }
 .problem__item {
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-  color: var(--color-text-main);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-primary);
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
 }
 .problem__item::before {
   content: '— ';
-  color: var(--color-primary);
+  color: var(--almond);
 }
 
 /* Strength */
 .strength__list { list-style: none; padding: 0; }
 .strength__item {
   display: flex;
-  gap: var(--space-4);
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid #e8e0d8;
+  gap: var(--sp-4);
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--line);
 }
 .strength__num {
-  font-family: var(--font-en);
-  font-size: var(--text-sm);
-  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--fs-sm);
+  color: var(--rose);
   flex-shrink: 0;
 }
 
 /* Access */
 .access__info p {
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-  color: var(--color-text-main);
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
 }
 .access__map-placeholder {
   width: 100%;
   height: 200px;
-  background-color: #e8e0d8;
-  margin-top: var(--space-6);
-  border-radius: 2px;
+  background-color: var(--surface-sunken);
+  margin-top: var(--sp-5);
+  border-radius: var(--r-sm);
 }
 
 /* CTA */
 .cta {
-  background-color: var(--color-surface);
+  background-color: var(--surface-card);
 }
 .cta__inner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--sp-4);
   text-align: center;
 }

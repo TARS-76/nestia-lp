@@ -1,3 +1,5 @@
+import { SectionHeader } from '@/design-system/components/content/SectionHeader'
+
 export function Problem() {
   const items = [
     '肩や首の重さが抜けない',
@@ -10,8 +12,7 @@ export function Problem() {
   return (
     <section className="problem">
       <div className="problem__inner">
-        <span className="eyebrow">for you</span>
-        <h2 className="section-title">こんな方へ</h2>
+        <SectionHeader eyebrow="for you" title="こんな方へ" align="left" />
         <ul className="problem__list">
           {items.map((item, i) => (
             <li key={i} className="problem__item">{item}</li>

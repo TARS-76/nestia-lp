@@ -1,12 +1,13 @@
 import { CTA as ctaConfig } from '@/lib/cta-config'
 import { Button } from '@/design-system/components/core/Button'
+import { Logo } from '@/design-system/components/core/Logo'
 
 export function Hero() {
   return (
     <section className="hero">
       <div className="hero__inner">
         {/* __HERO_IMAGE__ */}
-        <p className="hero__eyebrow">nestia.</p>
+        <Logo size={24} showTagline={false} />
         <h1 className="hero__title">
           なんでもない日に、<br />帰ってこられる場所。
         </h1>

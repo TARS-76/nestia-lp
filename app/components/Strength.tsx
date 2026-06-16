@@ -1,3 +1,5 @@
+import { SectionHeader } from '@/design-system/components/content/SectionHeader'
+
 export function Strength() {
   const items = [
     { num: '01', text: 'その日の身体に合わせるオーダーメイド施術' },
@@ -9,8 +11,7 @@ export function Strength() {
   return (
     <section className="strength">
       <div className="strength__inner">
-        <span className="eyebrow">why nestia.</span>
-        <h2 className="section-title">選ばれる理由</h2>
+        <SectionHeader eyebrow="why nestia." title="選ばれる理由" align="left" />
         <ol className="strength__list">
           {items.map((item) => (
             <li key={item.num} className="strength__item">

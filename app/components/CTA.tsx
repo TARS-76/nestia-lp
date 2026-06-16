@@ -1,19 +1,20 @@
 import { CTA as ctaConfig } from '@/lib/cta-config'
+import { Button } from '@/design-system/components/core/Button'
 
 export function CTA() {
   return (
     <section className="cta">
       <div className="cta__inner">
-        <a href={ctaConfig.primary.href} className="btn-primary btn-primary--large">
+        <Button as="a" href={ctaConfig.primary.href} variant="primary" size="lg">
           {ctaConfig.primary.label}
-        </a>
-        <a href={ctaConfig.secondary.href} className="btn-secondary">
+        </Button>
+        <Button as="a" href={ctaConfig.secondary.href} variant="outline">
           {ctaConfig.secondary.label}
-        </a>
+        </Button>
         {ctaConfig.tel.published && (
-          <a href={ctaConfig.tel.href} className="btn-tel">
+          <Button as="a" href={ctaConfig.tel.href} variant="ghost">
             {ctaConfig.tel.label}
-          </a>
+          </Button>
         )}
       </div>
     </section>

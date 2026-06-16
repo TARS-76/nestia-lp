@@ -1,10 +1,11 @@
+import { Eyebrow } from '@/design-system/components/core/Eyebrow'
 import { ScrollRevealText } from './ScrollRevealText'
 
 export function Story() {
   return (
     <section className="story">
       <div className="story__inner">
-        <span className="eyebrow">story</span>
+        <Eyebrow dot>story</Eyebrow>
         <ScrollRevealText
           lines={[
             'nestia. の "nest" は、',
