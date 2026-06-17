@@ -69,7 +69,7 @@ export function Menu() {
         <SectionHeader eyebrow="menu" title="メニュー" align="left" />
         <div className="n-menu__list">
           {items.map((item) => (
-            <MenuCard key={item.name} {...item} />
+            <MenuCard key={item.name} {...item} emphasis="accent" />
           ))}
         </div>
         <div className="n-menu__line">
