@@ -19,7 +19,7 @@ export function Staff() {
         .n-staff__photo {
           position: relative;
           width: 100%;
-          aspect-ratio: 4 / 3;
+          aspect-ratio: 760 / 920;
           border-radius: var(--r-lg);
           overflow: hidden;
           background: linear-gradient(135deg, var(--almond-200), var(--dust));
@@ -61,8 +61,8 @@ export function Staff() {
         <div className="n-staff__grid">
           <div className="n-staff__photo">
             <Image
-              src="/images/nestia.room.png"
-              alt="nestia. 店内"
+              src="/images/nestia.profile.png"
+              alt="川本 美乃梨"
               fill
               sizes="(min-width: 768px) 40vw, 100vw"
             />

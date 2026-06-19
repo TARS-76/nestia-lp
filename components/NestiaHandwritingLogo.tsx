@@ -1,317 +1,452 @@
 "use client";
 
-import {
-  useId,
-  useLayoutEffect,
-  useRef,
-  type SVGProps,
-} from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 
-type NestiaHandwritingLogoProps = SVGProps<SVGSVGElement> & {
-  /**
-   * CSS color value used by the logo paths.
-   * Example: "#F6F0E7" or "var(--foreground)"
-   */
-  logoColor?: string;
-  /**
-   * Set false when the parent will control playback later.
-   */
-  autoPlay?: boolean;
+const TRACE_SRC = "/svg/nestia-trace.svg";
+const FINAL_SRC = "/svg/nestia-final.svg";
+
+const FINAL_VIEWBOX_WIDTH = 1254;
+const FINAL_VIEWBOX_HEIGHT = 331;
+const TRACE_VIEWBOX_WIDTH = 1216;
+const TRACE_VIEWBOX_HEIGHT = 322;
+const TRACE_TO_FINAL_SCALE_X = FINAL_VIEWBOX_WIDTH / TRACE_VIEWBOX_WIDTH;
+const TRACE_TO_FINAL_SCALE_Y = FINAL_VIEWBOX_HEIGHT / TRACE_VIEWBOX_HEIGHT;
+
+const STROKE_ORDER = [
+  "trace-n",
+  "trace-e",
+  "trace-s",
+  "trace-t",
+  "trace-i-stem",
+  "trace-a-1",
+  "trace-a-2",
+] as const;
+
+const MASKED_FINAL_IDS = [
+  "final-n",
+  "final-e",
+  "final-s",
+  "final-t",
+  "final-i",
+  "final-a",
+] as const;
+
+const POP_ORDER = ["trace-i-dot", "trace-period"] as const;
+
+type TraceStrokeId = (typeof STROKE_ORDER)[number];
+type MaskedFinalId = (typeof MASKED_FINAL_IDS)[number];
+
+const FINAL_TO_TRACE: Record<MaskedFinalId, readonly TraceStrokeId[]> = {
+  "final-n": ["trace-n"],
+  "final-e": ["trace-e"],
+  "final-s": ["trace-s"],
+  "final-t": ["trace-t"],
+  "final-i": ["trace-i-stem"],
+  "final-a": ["trace-a-1", "trace-a-2"],
 };
 
-const VIEWBOX_WIDTH = 1508;
-const VIEWBOX_HEIGHT = 341;
-const REMAINING_REVEAL_X = 535;
-const REMAINING_REVEAL_WIDTH = VIEWBOX_WIDTH - REMAINING_REVEAL_X;
+const MASK_STROKE_WIDTH: Record<TraceStrokeId, number> = {
+  "trace-n": 56,
+  "trace-e": 48,
+  "trace-s": 50,
+  "trace-t": 46,
+  "trace-i-stem": 38,
+  "trace-a-1": 52,
+  "trace-a-2": 52,
+};
+
+const STROKE_TIMING: Record<TraceStrokeId, { duration: number; at: number }> = {
+  "trace-n": { duration: 0.86, at: 0 },
+  "trace-e": { duration: 0.78, at: 0.38 },
+  "trace-s": { duration: 0.78, at: 0.78 },
+  "trace-t": { duration: 0.78, at: 1.16 },
+  "trace-i-stem": { duration: 0.5, at: 1.58 },
+  "trace-a-1": { duration: 0.84, at: 1.88 },
+  "trace-a-2": { duration: 0.72, at: 2.28 },
+};
+
+type NestiaHandwritingLogoProps = {
+  className?: string;
+  style?: CSSProperties;
+  logoColor?: string;
+  autoPlay?: boolean;
+  ariaLabel?: string;
+};
+
+function setSvgPresentation(svg: SVGSVGElement, titleId: string) {
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  svg.setAttribute("focusable", "false");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-labelledby", titleId);
+  svg.style.display = "block";
+  svg.style.width = "100%";
+  svg.style.height = "100%";
+
+  const title = svg.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "title");
+  title.setAttribute("id", titleId);
+  title.textContent = "nestia.";
+  svg.prepend(title);
+}
+
+function normalizeLogoColor(svg: SVGSVGElement) {
+  svg.querySelectorAll<SVGElement>("[fill]").forEach((element) => {
+    const fill = element.getAttribute("fill");
+    if (
+      fill === "white" ||
+      fill === "#fff" ||
+      fill === "#ffffff" ||
+      fill === "black" ||
+      fill === "#000" ||
+      fill === "#050505"
+    ) {
+      element.setAttribute("fill", "currentColor");
+    }
+  });
+
+  svg.querySelectorAll<SVGElement>("[stroke]").forEach((element) => {
+    const stroke = element.getAttribute("stroke");
+    if (
+      stroke === "white" ||
+      stroke === "#fff" ||
+      stroke === "#ffffff" ||
+      stroke === "black" ||
+      stroke === "#000" ||
+      stroke === "#050505"
+    ) {
+      element.setAttribute("stroke", "currentColor");
+    }
+  });
+}
+
+function ensureFinalIds(svg: SVGSVGElement) {
+  const pathFallbackIds = [
+    "final-period",
+    "final-a",
+    "final-i",
+    "final-t",
+    "final-s",
+    "final-e",
+    "final-n",
+  ];
+  const paths = Array.from(svg.querySelectorAll("path"));
+
+  paths.forEach((path, index) => {
+    if (!path.id && pathFallbackIds[index]) {
+      path.id = pathFallbackIds[index];
+    }
+  });
+}
+
+function splitFinalIDot(svg: SVGSVGElement) {
+  const finalI = svg.querySelector<SVGPathElement>("#final-i");
+  const pathData = finalI?.getAttribute("d");
+  if (!finalI || !pathData || svg.querySelector("#final-i-dot")) return;
+
+  const dotStart = pathData.indexOf("M872.695");
+  if (dotStart === -1) return;
+
+  const stemPathData = pathData.slice(0, dotStart).trim();
+  const dotPathData = pathData.slice(dotStart).trim();
+  if (!stemPathData || !dotPathData) return;
+
+  const dotPath = finalI.cloneNode(false) as SVGPathElement;
+  finalI.setAttribute("d", stemPathData);
+  dotPath.setAttribute("id", "final-i-dot");
+  dotPath.setAttribute("d", dotPathData);
+  dotPath.setAttribute("data-final-pop", "trace-i-dot");
+  dotPath.setAttribute("opacity", "0");
+  finalI.after(dotPath);
+}
+
+function prepareFinalPopTargets(svg: SVGSVGElement) {
+  splitFinalIDot(svg);
+
+  const period = svg.querySelector<SVGPathElement>("#final-period");
+  period?.setAttribute("data-final-pop", "trace-period");
+  period?.setAttribute("opacity", "0");
+}
+
+function ensureTraceIds(svg: SVGSVGElement) {
+  const pathFallbackIds = [
+    "trace-a-2",
+    "trace-a-1",
+    "trace-i-stem",
+    "trace-t",
+    "trace-s",
+    "trace-e",
+    "trace-n",
+  ];
+  const paths = Array.from(svg.querySelectorAll("path"));
+
+  paths.forEach((path, index) => {
+    if (!path.id && pathFallbackIds[index]) {
+      path.id = pathFallbackIds[index];
+    }
+  });
+
+  const dot = svg.querySelector("circle");
+  if (dot && !dot.id) dot.id = "trace-i-dot";
+
+  const period = svg.querySelector("ellipse");
+  if (period && !period.id) period.id = "trace-period";
+}
+
+function createSvgElement<K extends keyof SVGElementTagNameMap>(
+  doc: Document,
+  tagName: K,
+) {
+  return doc.createElementNS("http://www.w3.org/2000/svg", tagName);
+}
+
+function getOrCreateDefs(svg: SVGSVGElement) {
+  const existingDefs = svg.querySelector("defs");
+  if (existingDefs) return existingDefs;
+
+  const defs = createSvgElement(svg.ownerDocument, "defs");
+  const firstNonTitleChild = Array.from(svg.children).find((child) => child.tagName.toLowerCase() !== "title");
+  svg.insertBefore(defs, firstNonTitleChild ?? null);
+  return defs;
+}
+
+function cloneMaskPath(
+  finalDoc: Document,
+  source: SVGPathElement,
+  traceId: TraceStrokeId,
+) {
+  const path = finalDoc.importNode(source, true) as SVGPathElement;
+  path.removeAttribute("id");
+  path.setAttribute("data-mask-trace", traceId);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "white");
+  path.setAttribute("stroke-width", String(MASK_STROKE_WIDTH[traceId]));
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("stroke-linejoin", "round");
+  path.setAttribute("pathLength", "1");
+  path.setAttribute("stroke-dasharray", "1");
+  path.setAttribute("stroke-dashoffset", "1");
+  path.setAttribute("transform", `scale(${TRACE_TO_FINAL_SCALE_X} ${TRACE_TO_FINAL_SCALE_Y})`);
+  return path;
+}
+
+function createMaskBackdrop(finalDoc: Document) {
+  const rect = createSvgElement(finalDoc, "rect");
+  rect.setAttribute("x", "0");
+  rect.setAttribute("y", "0");
+  rect.setAttribute("width", String(FINAL_VIEWBOX_WIDTH));
+  rect.setAttribute("height", String(FINAL_VIEWBOX_HEIGHT));
+  rect.setAttribute("fill", "black");
+  return rect;
+}
+
+function buildMaskedLogoMarkup(finalMarkup: string, traceMarkup: string, titleId: string) {
+  const parser = new DOMParser();
+  const finalDoc = parser.parseFromString(finalMarkup, "image/svg+xml");
+  const traceDoc = parser.parseFromString(traceMarkup, "image/svg+xml");
+  const finalSvg = finalDoc.querySelector("svg");
+  const traceSvg = traceDoc.querySelector("svg");
+
+  if (!finalSvg || !traceSvg) return "";
+
+  setSvgPresentation(finalSvg, titleId);
+  normalizeLogoColor(finalSvg);
+  ensureFinalIds(finalSvg);
+  prepareFinalPopTargets(finalSvg);
+  ensureTraceIds(traceSvg);
+
+  const defs = getOrCreateDefs(finalSvg);
+
+  MASKED_FINAL_IDS.forEach((finalId) => {
+    const finalPath = finalSvg.querySelector<SVGPathElement>(`#${finalId}`);
+    if (!finalPath) return;
+
+    const maskId = `${titleId}-${finalId}-mask`;
+    const mask = createSvgElement(finalDoc, "mask");
+    mask.setAttribute("id", maskId);
+    mask.setAttribute("maskUnits", "userSpaceOnUse");
+    mask.setAttribute("maskContentUnits", "userSpaceOnUse");
+    mask.setAttribute("mask-type", "luminance");
+    mask.setAttribute("style", "mask-type: luminance;");
+    mask.setAttribute("x", "0");
+    mask.setAttribute("y", "0");
+    mask.setAttribute("width", String(FINAL_VIEWBOX_WIDTH));
+    mask.setAttribute("height", String(FINAL_VIEWBOX_HEIGHT));
+    mask.append(createMaskBackdrop(finalDoc));
+
+    FINAL_TO_TRACE[finalId].forEach((traceId) => {
+      const tracePath = traceSvg.querySelector<SVGPathElement>(`#${traceId}`);
+      if (tracePath) {
+        mask.append(cloneMaskPath(finalDoc, tracePath, traceId));
+      }
+    });
+
+    defs.append(mask);
+    finalPath.setAttribute("mask", `url(#${maskId})`);
+  });
+
+  return finalSvg.outerHTML;
+}
 
 export default function NestiaHandwritingLogo({
-  logoColor = "currentColor",
-  autoPlay = true,
   className,
   style,
-  ...svgProps
+  logoColor = "var(--plum)",
+  autoPlay = true,
+  ariaLabel = "nestia.",
 }: NestiaHandwritingLogoProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const writeN1Ref = useRef<SVGPathElement>(null);
-  const writeN2Ref = useRef<SVGPathElement>(null);
-  const writeERef = useRef<SVGPathElement>(null);
-  const revealRectRef = useRef<SVGRectElement>(null);
-  const remainingLettersRef = useRef<SVGGElement>(null);
-  const periodRef = useRef<SVGPathElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const titleId = useId().replace(/:/g, "");
+  const [logoMarkup, setLogoMarkup] = useState<string | null>(null);
 
-  // useId is stable across SSR/client hydration. Remove ":" for simple SVG URL ids.
-  const instanceId = useId().replace(/:/g, "");
-  const nMaskId = `nestia-n-mask-${instanceId}`;
-  const eMaskId = `nestia-e-mask-${instanceId}`;
-  const remainingClipId = `nestia-remaining-clip-${instanceId}`;
+  useEffect(() => {
+    let mounted = true;
 
-  useLayoutEffect(() => {
-    const svg = svgRef.current;
-    const writeN1 = writeN1Ref.current;
-    const writeN2 = writeN2Ref.current;
-    const writeE = writeERef.current;
-    const revealRect = revealRectRef.current;
-    const remainingLetters = remainingLettersRef.current;
-    const period = periodRef.current;
+    async function loadSvgs() {
+      const [traceResponse, finalResponse] = await Promise.all([
+        fetch(TRACE_SRC),
+        fetch(FINAL_SRC),
+      ]);
 
-    if (
-      !svg ||
-      !writeN1 ||
-      !writeN2 ||
-      !writeE ||
-      !revealRect ||
-      !remainingLetters ||
-      !period
-    ) {
-      return;
-    }
-
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    const context = gsap.context(() => {
-      const prepareStroke = (path: SVGPathElement) => {
-        const length = path.getTotalLength();
-        gsap.set(path, {
-          strokeDasharray: length,
-          strokeDashoffset: reducedMotion ? 0 : length,
-        });
-      };
-
-      prepareStroke(writeN1);
-      prepareStroke(writeN2);
-      prepareStroke(writeE);
-
-      if (reducedMotion || !autoPlay) {
-        gsap.set(svg, { autoAlpha: 1 });
-        gsap.set(revealRect, {
-          attr: { width: REMAINING_REVEAL_WIDTH },
-        });
-        gsap.set(remainingLetters, { opacity: 1 });
-        gsap.set(writeE, {
-          opacity: 1,
-          attr: { "stroke-linecap": "round" },
-        });
-        gsap.set(period, { opacity: 1, scale: 1 });
-        return;
+      if (!traceResponse.ok || !finalResponse.ok) {
+        throw new Error("Failed to load nestia logo SVGs");
       }
 
-      gsap.set(svg, { autoAlpha: 1 });
-      gsap.set(revealRect, { attr: { width: 0 } });
-      gsap.set(remainingLetters, { opacity: 0 });
-      gsap.set(writeE, {
-        opacity: 0,
-        attr: { "stroke-linecap": "butt" },
+      const [trace, finalLogo] = await Promise.all([
+        traceResponse.text(),
+        finalResponse.text(),
+      ]);
+
+      if (!mounted) return;
+      setLogoMarkup(buildMaskedLogoMarkup(finalLogo, trace, `${titleId}-logo`));
+    }
+
+    loadSvgs().catch(() => {
+      if (mounted) setLogoMarkup(null);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [titleId]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !logoMarkup) return;
+
+    const maskStrokes = STROKE_ORDER.flatMap((id) =>
+      Array.from(root.querySelectorAll<SVGPathElement>(`[data-mask-trace="${id}"]`)),
+    );
+    const popTargets = POP_ORDER.flatMap((id) =>
+      Array.from(root.querySelectorAll<SVGGraphicsElement>(`[data-final-pop="${id}"]`)),
+    );
+
+    const mm = gsap.matchMedia();
+    const ctx = gsap.context(() => {
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        maskStrokes.forEach((path) => {
+          const length = path.getTotalLength();
+          gsap.set(path, { strokeDasharray: length, strokeDashoffset: 0 });
+        });
+        gsap.set(popTargets, { opacity: 1, scale: 1 });
       });
-      gsap.set(period, {
-        opacity: 0,
-        scale: 0.72,
-        transformOrigin: "center center",
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        maskStrokes.forEach((path) => {
+          const length = path.getTotalLength();
+          gsap.set(path, {
+            strokeDasharray: length,
+            strokeDashoffset: autoPlay ? length : 0,
+          });
+        });
+
+        gsap.set(popTargets, {
+          opacity: autoPlay ? 0 : 1,
+          scale: autoPlay ? 0 : 1,
+          transformBox: "fill-box",
+          transformOrigin: "50% 50%",
+        });
+
+        if (!autoPlay) return;
+
+        const tl = gsap.timeline({ defaults: { ease: "sine.inOut" } });
+
+        STROKE_ORDER.forEach((id) => {
+          const paths = Array.from(root.querySelectorAll<SVGPathElement>(`[data-mask-trace="${id}"]`));
+          const timing = STROKE_TIMING[id];
+
+          paths.forEach((path, pathIndex) => {
+            tl.to(
+              path,
+              {
+                strokeDashoffset: 0,
+                duration: timing.duration,
+              },
+              pathIndex === 0 ? timing.at : "<",
+            );
+          });
+
+          if (id === "trace-i-stem") {
+            const dot = root.querySelector<SVGGraphicsElement>('[data-final-pop="trace-i-dot"]');
+            if (dot) {
+              tl.to(
+                dot,
+                { opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.8)" },
+                timing.at + timing.duration - 0.1,
+              );
+            }
+          }
+        });
+
+        const period = root.querySelector<SVGGraphicsElement>('[data-final-pop="trace-period"]');
+        if (period) {
+          tl.to(
+            period,
+            { opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.8)" },
+            2.74,
+          );
+        }
       });
+    }, root);
 
-      const timeline = gsap.timeline();
+    return () => {
+      mm.revert();
+      ctx.revert();
+    };
+  }, [autoPlay, logoMarkup]);
 
-      timeline
-        .to(writeN1, {
-          strokeDashoffset: 0,
-          duration: 0.48,
-          ease: "power1.inOut",
-        })
-        .to(
-          writeN2,
-          {
-            strokeDashoffset: 0,
-            duration: 0.78,
-            ease: "power1.inOut",
-          },
-          "-=0.04",
-        )
-        .set(writeE, { opacity: 1 })
-        .to(
-          writeE,
-          {
-            strokeDashoffset: 0,
-            duration: 0.96,
-            ease: "power1.inOut",
-            onComplete: () => {
-              writeE.setAttribute("stroke-linecap", "round");
-            },
-          },
-          "-=0.06",
-        )
-        .to(
-          remainingLetters,
-          {
-            opacity: 1,
-            duration: 0.18,
-            ease: "none",
-          },
-          "-=0.04",
-        )
-        .to(
-          revealRect,
-          {
-            attr: { width: REMAINING_REVEAL_WIDTH },
-            duration: 1.08,
-            ease: "power1.inOut",
-          },
-          "<",
-        )
-        .to(
-          period,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 0.28,
-            ease: "power1.out",
-          },
-          "-=0.08",
-        );
-    }, svg);
-
-    return () => context.revert();
-  }, [autoPlay]);
+  const mergedClassName = ["nestia-handwriting-logo", className].filter(Boolean).join(" ");
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 1508 341"
-      role="img"
-      aria-label="nestia."
-      preserveAspectRatio="xMidYMid meet"
-      className={className}
+    <div
+      ref={rootRef}
+      className={mergedClassName}
       style={{
+        position: "relative",
+        display: "inline-block",
+        width: "100%",
+        aspectRatio: "1254 / 331",
         color: logoColor,
-        display: "block",
-        visibility: "hidden",
+        lineHeight: 0,
         ...style,
       }}
-      {...svgProps}
+      aria-label={ariaLabel}
     >
-      <defs>
-        <mask
-          id={nMaskId}
-          maskUnits="userSpaceOnUse"
-          x="0"
-          y="0"
-          width={VIEWBOX_WIDTH}
-          height={VIEWBOX_HEIGHT}
+      {logoMarkup ? (
+        <div dangerouslySetInnerHTML={{ __html: logoMarkup }} />
+      ) : (
+        <span
+          style={{
+            display: "block",
+            fontFamily: "var(--font-display)",
+            fontSize: "inherit",
+            lineHeight: 1,
+          }}
         >
-          <rect
-            x="0"
-            y="0"
-            width={VIEWBOX_WIDTH}
-            height={VIEWBOX_HEIGHT}
-            fill="black"
-          />
-          <path
-            ref={writeN1Ref}
-            d="M22.5 318.405L173.404 174.703"
-            fill="none"
-            stroke="white"
-            strokeWidth="45"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            ref={writeN2Ref}
-            d="M111.588 233.305L201.282 194.577C210.979 189.481 234.25 179.391 249.765 179.799C265.28 180.206 276.431 183.026 280.067 184.385C283.299 186.253 288.794 191.927 284.915 199.672C281.037 207.418 248.957 234.833 233.402 247.573C216.433 260.143 182.373 287.218 181.889 294.964C181.283 304.646 180.677 314.838 188.555 316.367C194.858 317.59 221.079 316.876 233.402 316.367L290.976 304.137L326.732 291.397"
-            fill="none"
-            stroke="white"
-            strokeWidth="45"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </mask>
-
-        <mask
-          id={eMaskId}
-          maskUnits="userSpaceOnUse"
-          x="0"
-          y="0"
-          width={VIEWBOX_WIDTH}
-          height={VIEWBOX_HEIGHT}
-        >
-          <rect
-            x="0"
-            y="0"
-            width={VIEWBOX_WIDTH}
-            height={VIEWBOX_HEIGHT}
-            fill="black"
-          />
-          <path
-            ref={writeERef}
-            d="M324.914 293.435L429.759 258.274C446.728 252.159 483.818 236.974 496.424 225.151C512.181 210.374 520.059 203.239 513.393 193.048C506.726 182.856 492.788 178.27 480.061 178.27C467.334 178.27 446.122 181.837 424.305 193.048C402.487 204.259 344.308 241.458 346.126 267.447C347.58 288.238 356.024 304.986 360.065 310.761C394.003 319.934 424.911 315.857 429.759 315.347C433.638 314.94 462.485 306.684 476.424 302.608L538.847 281.715"
-            fill="none"
-            stroke="white"
-            strokeWidth="52"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </mask>
-
-        <clipPath
-          id={remainingClipId}
-          clipPathUnits="userSpaceOnUse"
-        >
-          <rect
-            ref={revealRectRef}
-            x={REMAINING_REVEAL_X}
-            y="0"
-            width={REMAINING_REVEAL_WIDTH}
-            height={VIEWBOX_HEIGHT}
-          />
-        </clipPath>
-      </defs>
-
-      <path
-        id="letter-n"
-        d="M40.061 320.977C39.0746 321.308 38.0882 321.474 37.1018 321.474C36.1154 321.474 35.129 321.474 34.1426 321.474C31.7753 321.474 29.5066 321.143 27.3365 320.479C24.9692 319.65 22.8977 318.737 21.1222 317.742C19.3467 316.581 17.9658 315.42 16.9794 314.259C15.7957 312.932 15.2039 311.687 15.2039 310.526C15.2039 308.536 15.993 306.545 17.5712 304.555C18.9522 302.398 20.7277 300.408 22.8977 298.583L101.612 222.942C107.53 217.136 113.646 211.247 119.959 205.276C126.469 199.138 132.585 193.664 138.306 188.854C144.224 183.877 149.551 179.896 154.285 176.91C159.02 173.759 162.768 172.183 165.53 172.183C167.109 172.183 169.279 172.432 172.041 172.929C174.802 173.427 177.466 174.173 180.03 175.169C182.792 175.998 185.061 177.159 186.836 178.652C188.809 179.979 189.796 181.472 189.796 183.131C189.796 184.956 188.316 187.278 185.357 190.098C182.595 192.918 179.143 196.235 175 200.051L170.265 204.529C174.605 202.041 180.228 199.055 187.132 195.572C194.234 191.922 202.027 188.439 210.51 185.121C218.993 181.804 227.772 178.984 236.847 176.662C246.119 174.339 255.095 173.178 263.775 173.178C276.401 173.178 284.983 174.754 289.52 177.906C294.057 180.892 296.326 185.121 296.326 190.595C296.326 196.899 294.156 203.451 289.816 210.252C285.476 216.887 280.051 223.523 273.54 230.158C267.228 236.793 260.323 243.345 252.826 249.814C245.527 256.118 238.622 262.172 232.112 267.978C225.799 273.784 220.472 279.258 216.132 284.4C211.989 289.377 209.918 293.772 209.918 297.588C209.918 299.91 210.411 301.818 211.398 303.311C212.384 304.638 213.568 305.716 214.949 306.545C216.527 307.209 218.204 307.623 219.979 307.789C221.952 307.955 223.925 308.038 225.898 308.038C237.143 308.038 248.289 307.126 259.336 305.301C270.384 303.476 281.234 301.071 291.887 298.085C302.738 295.099 313.391 291.699 323.847 287.884C334.302 283.903 344.462 279.839 354.326 275.692L357.285 281.663C350.775 285.313 341.799 289.46 330.357 294.104C318.915 298.749 306.091 303.145 291.887 307.292C277.683 311.439 262.493 314.922 246.316 317.742C230.336 320.562 214.455 321.972 198.673 321.972C189.401 321.972 181.904 320.064 176.183 316.249C170.66 312.434 167.898 306.379 167.898 298.085C167.898 294.104 169.476 289.46 172.632 284.151C175.789 278.843 179.833 273.369 184.765 267.729C189.894 261.924 195.517 256.035 201.632 250.063C207.945 244.092 214.061 238.369 219.979 232.895C226.095 227.421 231.816 222.361 237.143 217.717C242.469 212.906 246.809 208.842 250.163 205.525C251.347 204.032 253.023 202.124 255.194 199.802C257.364 197.314 258.449 195.074 258.449 193.084C258.449 191.757 257.758 190.678 256.377 189.849C255.194 189.02 253.122 188.605 250.163 188.605C244.047 188.605 238.129 189.185 232.408 190.347C226.884 191.342 221.262 192.835 215.54 194.825C210.017 196.816 204.296 199.304 198.377 202.29C192.459 205.276 186.245 208.676 179.734 212.492C163.952 221.947 148.959 231.982 134.755 242.599C120.748 253.215 106.939 264.246 93.3263 275.692C87.4079 281.497 80.8977 287.718 73.7957 294.353C66.6936 300.988 59.9861 306.711 53.6732 311.522C50.714 314.341 48.1494 316.415 45.9794 317.742C43.8093 319.069 41.8365 320.147 40.061 320.977Z"
-        fill="currentColor"
-        mask={`url(#${nMaskId})`}
-      />
-
-      <path
-        id="letter-e"
-        d="M543.122 282.161C517.87 291.948 496.761 299.578 479.795 305.052C462.829 310.526 448.329 314.673 436.295 317.493C424.459 320.147 414.2 321.806 405.52 322.47C396.84 323.133 388.061 323.465 379.183 323.465C372.278 323.465 365.67 322.718 359.357 321.225C353.241 319.733 347.816 317.41 343.081 314.259C338.347 311.107 334.598 307.043 331.836 302.066C329.074 297.09 327.693 291.118 327.693 284.151C327.693 276.189 329.666 267.978 333.612 259.518C337.755 250.893 343.377 242.516 350.479 234.388C357.581 226.094 365.867 218.297 375.336 210.999C385.003 203.7 395.459 197.314 406.704 191.84C417.949 186.2 429.687 181.804 441.918 178.652C454.346 175.335 466.775 173.676 479.204 173.676C483.544 173.676 488.673 174.008 494.591 174.671C500.51 175.335 506.132 176.662 511.459 178.652C516.785 180.477 521.323 183.048 525.071 186.366C528.819 189.683 530.693 193.913 530.693 199.055C530.693 203.7 528.129 208.51 522.999 213.487C517.87 218.463 510.965 223.523 502.285 228.665C493.802 233.641 483.938 238.618 472.693 243.594C461.449 248.57 449.809 253.381 437.775 258.025C425.938 262.504 414.003 266.734 401.969 270.715C389.935 274.696 378.789 278.18 368.53 281.166C368.136 282.493 367.938 283.82 367.938 285.147C367.938 286.474 367.938 287.801 367.938 289.128C367.938 295.431 370.404 300.656 375.336 304.803C380.268 308.95 387.074 311.024 395.755 311.024C403.449 311.024 411.044 310.775 418.54 310.277C426.037 309.78 435.013 308.453 445.469 306.296C455.925 303.974 468.649 300.491 483.642 295.846C498.636 291.035 517.476 284.483 540.163 276.189L543.122 282.161ZM475.061 189.103C469.931 189.103 464.21 190.347 457.897 192.835C451.585 195.157 444.976 198.392 438.071 202.539C431.166 206.52 424.261 211.247 417.357 216.721C410.649 222.195 404.238 228.084 398.122 234.388C392.204 240.525 386.877 246.912 382.142 253.547C377.408 260.016 373.857 266.402 371.489 272.706C380.17 270.052 389.146 267.149 398.418 263.997C407.887 260.845 417.061 257.528 425.938 254.044C435.013 250.561 443.595 246.912 451.683 243.096C459.772 239.115 466.874 234.968 472.989 230.655C479.105 226.342 483.938 221.947 487.489 217.468C491.04 212.823 492.816 208.013 492.816 203.036C492.816 199.055 491.534 195.738 488.969 193.084C486.602 190.43 481.966 189.103 475.061 189.103Z"
-        fill="currentColor"
-        mask={`url(#${eMaskId})`}
-      />
-
-      <g
-        ref={remainingLettersRef}
-        clipPath={`url(#${remainingClipId})`}
-      >
-        <path
-          id="letter-s"
-          d="M585.734 246.331C588.693 246.331 591.455 246.663 594.02 247.326C596.584 247.99 598.755 248.819 600.53 249.814C608.816 245.004 618.088 239.613 628.346 233.641C638.605 227.504 649.159 221.283 660.01 214.98C670.86 208.51 681.612 202.124 692.265 195.821C702.918 189.351 712.88 183.38 722.152 177.906C731.425 172.266 739.71 167.289 747.01 162.977C754.309 158.498 759.931 155.097 763.877 152.775L769.203 160.24C764.666 164.055 760.819 167.787 757.663 171.436C754.703 174.92 752.336 178.403 750.561 181.887C748.785 185.204 747.503 188.522 746.714 191.84C745.925 195.157 745.53 198.558 745.53 202.041C745.53 217.966 743.36 232.065 739.02 244.34C734.877 256.45 729.156 266.983 721.857 275.94C714.754 284.732 706.469 292.114 696.999 298.085C687.53 303.891 677.469 308.619 666.816 312.268C656.36 315.751 645.608 318.24 634.561 319.733C623.513 321.225 612.959 321.972 602.897 321.972C596.387 321.972 589.187 321.308 581.295 319.981C573.602 318.488 566.401 316.332 559.693 313.512C552.986 310.526 547.363 306.794 542.826 302.315C538.289 297.836 536.02 292.445 536.02 286.142C536.02 281 537.401 276.106 540.163 271.462C542.925 266.651 546.574 262.421 551.112 258.772C555.846 254.957 561.173 251.971 567.091 249.814C573.207 247.492 579.421 246.331 585.734 246.331ZM705.877 199.055C697.394 203.866 689.404 208.345 681.908 212.492C674.608 216.639 667.112 220.951 659.418 225.43C651.724 229.909 643.635 234.636 635.152 239.613C626.67 244.589 617.299 250.146 607.04 256.284C608.224 257.777 608.816 259.27 608.816 260.762C608.816 264.246 607.829 267.315 605.857 269.969C604.081 272.457 601.714 274.613 598.755 276.438C595.993 278.097 592.935 279.59 589.581 280.917C586.227 282.244 583.071 283.488 580.112 284.649C577.35 285.81 574.982 287.054 573.01 288.381C571.234 289.543 570.346 290.952 570.346 292.611C570.346 294.768 571.037 296.675 572.418 298.334C573.799 299.827 575.574 301.071 577.744 302.066C579.914 303.062 582.282 303.808 584.846 304.306C587.411 304.803 589.877 305.052 592.244 305.052C596.979 305.052 601.812 304.555 606.744 303.559C611.874 302.564 616.707 301.403 621.244 300.076C631.503 297.422 641.367 293.441 650.836 288.133C660.503 282.659 669.183 275.775 676.877 267.481C684.571 259.187 690.982 249.4 696.112 238.12C701.241 226.84 704.496 213.819 705.877 199.055Z"
-          fill="currentColor"
-        />
-        <path
-          id="letter-t"
-          d="M953.856 106.992C959.577 101.186 965.299 95.3807 971.02 89.5749C976.938 83.7691 982.856 77.9633 988.775 72.1575C992.523 68.5082 996.863 64.1953 1001.8 59.219C1006.73 54.2426 1011.96 49.1003 1017.48 43.7922C1023.2 38.3181 1028.92 33.01 1034.64 27.8677C1040.56 22.7255 1046.08 18.0809 1051.21 13.9339C1056.54 9.78689 1061.27 6.4693 1065.42 3.98111C1069.56 1.32704 1072.82 0 1075.18 0C1076.76 0 1078.93 0.248819 1081.69 0.746457C1084.45 1.2441 1087.12 1.99055 1089.68 2.98583C1092.44 3.81523 1094.71 4.97638 1096.49 6.4693C1098.46 7.79633 1099.45 9.28925 1099.45 10.948C1099.45 12.7727 1097.97 15.095 1095.01 17.915C1092.25 20.7349 1088.8 24.0525 1084.65 27.8677L1035.53 74.6457C1034.15 75.8069 1032.18 77.6316 1029.61 80.1198C1027.05 82.4421 1024.09 85.262 1020.73 88.5796C1017.58 91.7313 1014.13 95.1318 1010.38 98.7812C1006.63 102.265 1002.98 105.665 999.428 108.983L1068.67 112.466L1055.65 128.888H978.714C968.455 138.675 958.098 148.628 947.642 158.747C937.384 168.699 927.421 178.403 917.754 187.858C908.088 197.314 898.914 206.271 890.234 214.731C881.554 223.191 873.761 230.821 866.856 237.622C860.149 244.423 854.329 250.229 849.397 255.04C844.663 259.684 841.407 262.919 839.632 264.744C832.53 271.71 826.71 278.263 822.173 284.4C817.635 290.372 815.367 295.099 815.367 298.583C815.367 302.896 816.945 305.633 820.101 306.794C823.455 307.955 827.993 308.536 833.714 308.536C839.04 308.536 845.55 308.204 853.244 307.54C861.135 306.711 870.21 305.135 880.469 302.813C890.924 300.491 902.663 297.256 915.683 293.109C928.901 288.796 943.598 283.156 959.775 276.189L962.734 282.161C947.543 289.791 932.452 296.178 917.458 301.32C902.663 306.462 888.36 310.609 874.55 313.761C860.938 316.913 848.115 319.152 836.081 320.479C824.047 321.806 813.394 322.47 804.122 322.47C793.469 322.47 785.676 320.313 780.744 316C775.812 311.522 773.346 305.55 773.346 298.085C773.346 293.275 775.615 287.552 780.152 280.917C784.887 274.282 792.482 265.573 802.938 254.791C804.122 253.63 806.686 251.058 810.632 247.077C814.775 242.93 820.003 237.788 826.316 231.651C832.629 225.513 839.829 218.463 847.918 210.501C856.006 202.539 864.588 194.162 873.663 185.37C882.935 176.413 892.503 167.206 902.367 157.751C912.231 148.13 922.095 138.509 931.958 128.888H875.142L897.04 104.006L953.856 106.992Z"
-          fill="currentColor"
-        />
-        <path
-          id="letter-i"
-          d="M1174.61 108.983C1174.61 111.803 1173.72 114.457 1171.95 116.945C1170.17 119.433 1167.81 121.59 1164.85 123.414C1162.08 125.239 1158.83 126.732 1155.08 127.893C1151.33 128.888 1147.58 129.386 1143.84 129.386C1141.07 129.386 1138.31 129.137 1135.55 128.639C1132.99 128.142 1130.52 127.23 1128.15 125.902C1125.98 124.575 1124.21 122.834 1122.83 120.677C1121.44 118.355 1120.75 115.452 1120.75 111.969C1120.75 108.983 1121.74 106.412 1123.71 104.255C1125.69 102.099 1128.15 100.357 1131.11 99.03C1134.07 97.703 1137.42 96.7077 1141.17 96.0442C1144.92 95.3807 1148.57 95.0489 1152.12 95.0489C1158.04 95.0489 1162.97 96.2101 1166.92 98.5324C1171.06 100.689 1173.62 104.172 1174.61 108.983ZM999.428 282.161C996.469 285.147 994.101 288.215 992.326 291.367C990.748 294.353 989.958 296.758 989.958 298.583C989.958 302.896 991.537 305.633 994.693 306.794C998.047 307.955 1002.58 308.536 1008.31 308.536C1013.63 308.536 1020.14 308.204 1027.84 307.54C1035.73 306.711 1044.8 305.135 1055.06 302.813C1065.52 300.491 1077.25 297.256 1090.27 293.109C1103.49 288.796 1118.19 283.156 1134.37 276.189L1137.33 282.161C1122.14 289.791 1107.04 296.178 1092.05 301.32C1077.25 306.462 1062.95 310.609 1049.14 313.761C1035.53 316.913 1022.71 319.152 1010.67 320.479C998.639 321.806 987.986 322.47 978.714 322.47C968.06 322.47 960.268 320.313 955.336 316C950.404 311.522 947.938 305.55 947.938 298.085C947.938 294.104 949.516 289.625 952.673 284.649C955.829 279.507 960.958 273.038 968.06 265.241C975.557 257.279 983.448 249.483 991.734 241.852C1000.02 234.222 1008.31 226.26 1016.59 217.966C1022.11 212.492 1027.84 207.1 1033.75 201.792C1039.67 196.318 1045.3 191.425 1050.62 187.112C1055.95 182.799 1060.78 179.316 1065.12 176.662C1069.46 174.008 1072.82 172.68 1075.18 172.68C1076.76 172.68 1078.93 172.929 1081.69 173.427C1084.45 173.925 1087.12 174.671 1089.68 175.666C1092.44 176.496 1094.71 177.657 1096.49 179.15C1098.46 180.477 1099.45 181.97 1099.45 183.629C1099.45 185.453 1097.97 187.775 1095.01 190.595C1092.25 193.415 1088.8 196.733 1084.65 200.548L1035.53 247.326C1034.15 248.487 1032.08 250.312 1029.32 252.8C1026.75 255.123 1023.79 257.942 1020.44 261.26C1017.28 264.412 1013.83 267.812 1010.08 271.462C1006.33 275.111 1002.78 278.677 999.428 282.161Z"
-          fill="currentColor"
-        />
-        <path
-          id="letter-a"
-          d="M1328.49 251.805C1319.02 260.762 1311.03 269.305 1304.52 277.433C1298.01 285.396 1294.75 292.28 1294.75 298.085C1294.75 302.564 1296.63 305.799 1300.38 307.789C1304.32 309.614 1309.16 310.526 1314.88 310.526C1320.2 310.526 1326.42 310.029 1333.52 309.033C1340.82 308.038 1349.3 306.296 1358.97 303.808C1368.83 301.154 1380.18 297.671 1393 293.358C1406.02 289.045 1421.01 283.488 1437.98 276.687L1440.94 282.659C1423.18 289.791 1407.2 295.846 1393 300.822C1378.79 305.799 1365.87 309.946 1354.23 313.263C1342.79 316.415 1332.34 318.737 1322.87 320.23C1313.59 321.723 1305.01 322.47 1297.12 322.47C1292.19 322.47 1287.16 321.972 1282.03 320.977C1276.9 319.816 1272.17 318.157 1267.83 316C1263.68 313.678 1260.23 310.941 1257.47 307.789C1254.71 304.638 1253.33 300.905 1253.33 296.592C1253.33 294.602 1253.62 292.528 1254.21 290.372C1254.81 288.215 1255.89 285.976 1257.47 283.654C1241.09 297.09 1225.41 306.96 1210.42 313.263C1195.42 319.401 1181.52 322.47 1168.69 322.47C1158.83 322.47 1150.84 321.391 1144.72 319.235C1138.81 316.913 1134.07 314.01 1130.52 310.526C1127.17 306.877 1124.9 302.813 1123.71 298.334C1122.53 293.855 1121.94 289.294 1121.94 284.649C1121.94 276.853 1124.11 268.725 1128.45 260.265C1132.79 251.805 1138.61 243.428 1145.91 235.134C1153.4 226.84 1161.99 218.961 1171.65 211.496C1181.52 203.866 1191.87 197.231 1202.72 191.591C1213.57 185.785 1224.52 181.223 1235.57 177.906C1246.62 174.422 1257.27 172.68 1267.53 172.68C1274.04 172.68 1280.16 173.178 1285.88 174.173C1291.6 175.169 1296.53 176.745 1300.67 178.901C1304.82 180.892 1308.07 183.629 1310.44 187.112C1313 190.43 1314.28 194.411 1314.28 199.055C1314.28 204.363 1312.51 210.501 1308.96 217.468L1298.9 221.449C1300.08 217.468 1300.67 213.653 1300.67 210.003C1300.67 207.349 1300.28 204.778 1299.49 202.29C1298.9 199.636 1297.81 197.314 1296.23 195.323C1294.66 193.332 1292.49 191.757 1289.72 190.595C1287.16 189.268 1283.9 188.605 1279.96 188.605C1271.48 188.605 1262.79 190.347 1253.92 193.83C1245.04 197.148 1236.36 201.626 1227.88 207.266C1219.59 212.74 1211.7 218.961 1204.2 225.928C1196.9 232.729 1190.49 239.696 1184.97 246.829C1179.44 253.961 1175.01 260.845 1171.65 267.481C1168.5 274.116 1166.92 279.839 1166.92 284.649C1166.92 291.45 1168.79 295.929 1172.54 298.085C1176.29 300.076 1182.31 301.071 1190.59 301.071C1200.45 301.071 1210.71 298.5 1221.37 293.358C1232.02 288.215 1243.26 281.166 1255.1 272.208C1260.43 267.895 1265.56 263.748 1270.49 259.767C1275.62 255.786 1281.14 250.81 1287.06 244.838C1290.61 241.189 1294.85 236.876 1299.78 231.899C1304.91 226.923 1310.24 221.781 1315.76 216.473C1321.49 210.999 1327.21 205.69 1332.93 200.548C1338.85 195.406 1344.37 190.761 1349.5 186.614C1354.83 182.467 1359.56 179.15 1363.7 176.662C1367.85 174.008 1371.1 172.68 1373.47 172.68C1375.05 172.68 1377.22 172.929 1379.98 173.427C1382.74 173.925 1385.4 174.671 1387.97 175.666C1390.73 176.496 1393 177.657 1394.77 179.15C1396.75 180.477 1397.73 181.97 1397.73 183.629C1397.73 185.453 1396.25 187.775 1393.29 190.595C1390.53 193.415 1387.08 196.733 1382.94 200.548L1328.49 251.805Z"
-          fill="currentColor"
-        />
-      </g>
-
-      <path
-        ref={periodRef}
-        id="period"
-        d="M1507.22 301.569C1507.22 304.389 1506.34 307.043 1504.56 309.531C1502.78 312.019 1500.42 314.176 1497.46 316C1494.7 317.825 1491.44 319.318 1487.69 320.479C1483.94 321.474 1480.2 321.972 1476.45 321.972C1473.69 321.972 1470.92 321.723 1468.16 321.225C1465.6 320.728 1463.13 319.816 1460.76 318.488C1458.59 317.161 1456.82 315.42 1455.44 313.263C1454.06 310.941 1453.37 308.038 1453.37 304.555C1453.37 301.569 1454.35 298.998 1456.33 296.841C1458.3 294.685 1460.76 292.943 1463.72 291.616C1466.68 290.289 1470.04 289.294 1473.78 288.63C1477.53 287.967 1481.18 287.635 1484.73 287.635C1490.65 287.635 1495.58 288.796 1499.53 291.118C1503.67 293.275 1506.24 296.758 1507.22 301.569Z"
-        fill="currentColor"
-      />
-    </svg>
+          nestia.
+        </span>
+      )}
+    </div>
   );
 }

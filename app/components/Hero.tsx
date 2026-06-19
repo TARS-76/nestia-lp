@@ -1,13 +1,25 @@
+import Image from 'next/image'
 import { CTA as ctaConfig } from '@/lib/cta-config'
 import { Button } from '@/design-system/components/core/Button'
-import { Logo } from '@/design-system/components/core/Logo'
+import NestiaHandwritingLogo from '@/components/NestiaHandwritingLogo'
 
 export function Hero() {
   return (
     <section className="hero">
       <div className="hero__inner">
         {/* __HERO_IMAGE__ */}
-        <Logo size={24} showTagline={false} />
+        <Image
+          src="/images/butterfly.svg"
+          alt=""
+          aria-hidden="true"
+          width={900}
+          height={450}
+          className="hero__butterfly"
+        />
+        <NestiaHandwritingLogo
+          className="hero__logo"
+          style={{ width: '132px' }}
+        />
         <h1 className="hero__title">
           なんでもない日に、<br />帰ってこられる場所。
         </h1>

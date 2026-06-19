@@ -30,6 +30,19 @@
 }
 
 /* Hero */
+.hero__inner {
+  position: relative;
+}
+.hero__butterfly {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* TODO: DESIGN.md 未定義 — 幅は指示範囲(200-280px)内の暫定値。確定後にDESIGN.mdへ追記して反映する */
+  width: 240px;
+  height: auto;
+  z-index: -1;
+  pointer-events: none;
+}
 .hero__title {
   font-family: var(--font-serif-jp);
   font-size: var(--fs-h2);
@@ -97,6 +110,17 @@
 }
 
 /* Access */
+.access__photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-bottom: var(--sp-5);
+}
+.access__photo img {
+  object-fit: cover;
+}
 .access__info p {
   font-size: var(--fs-body);
   line-height: var(--lh-relaxed);
