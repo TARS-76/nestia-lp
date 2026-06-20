@@ -1,7 +1,12 @@
 import Image from 'next/image'
 import { CTA as ctaConfig } from '@/lib/cta-config'
 import { Button } from '@/design-system/components/core/Button'
+import { NestiaLogo } from '@/components/hero/NestiaLogo'
 import NestiaHandwritingLogo from '@/components/NestiaHandwritingLogo'
+
+// Temporary switch while verifying the inline-SVG logo migration (see nestia-handwriting-logo-implementation.md, step 9).
+// Set to false to roll back to the fetch/DOMParser-based logo.
+const USE_NEW_LOGO = true
 
 export function Hero() {
   return (
@@ -16,10 +21,11 @@ export function Hero() {
           height={450}
           className="hero__butterfly"
         />
-        <NestiaHandwritingLogo
-          className="hero__logo"
-          style={{ width: '132px' }}
-        />
+        {USE_NEW_LOGO ? (
+          <NestiaLogo className="hero__logo" style={{ width: '132px' }} />
+        ) : (
+          <NestiaHandwritingLogo className="hero__logo" style={{ width: '132px' }} />
+        )}
         <h1 className="hero__title">
           なんでもない日に、<br />帰ってこられる場所。
         </h1>

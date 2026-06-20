@@ -19,6 +19,9 @@
   /* Accent — brand spark (decorative only) */
   --petal: #FF7D9B;       /* Brand Accent — petals, dots, tiny marks, soft washes, price-side accent */
 
+  /* Logo */
+  --color-logo: #927F6D;  /* nestia. wordmark ink (from source logo SVG) */
+
   /* Tints & shades derived from the palette (oklch-harmonized) */
   --plum-700: #5E3F3C;    /* darker plum — pressed, deep type */
   --plum-300: #A98884;    /* lighter plum */
