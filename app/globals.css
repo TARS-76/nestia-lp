@@ -59,7 +59,7 @@
 }
 .hero__logo {
   width: 220px;
-  margin: 0 0 var(--sp-2);
+  margin: 0 0 var(--sp-1);
 }
 .hero__subtitle {
   width: 220px;

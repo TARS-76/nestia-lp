@@ -28,7 +28,7 @@ export function Hero() {
           </HeroVisual>
           <div className="hero__content">
             <h1 className="hero__title">
-              なんでもない日に、<br />帰ってこられる場所。
+              なんでもない日に帰ってこられる場所。
             </h1>
             {USE_NEW_LOGO ? (
               <NestiaLogo className="hero__logo" />
