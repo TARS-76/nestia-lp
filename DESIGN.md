@@ -240,6 +240,20 @@
 
 - **写真はCanva Proで完成 → `public/` に一方通行で配置**（コードと層を分離）。
 
+### 7-1. Heroロゴ・線画アセット（2026-06-20追加）
+
+> ロゴの手書きアニメーション移行・Hero 2カラム化で追加したSVG／コンポーネント。
+
+| アセット | 内容 | 用途 |
+|---------|------|------|
+| `public/svg/nestia-final.svg` | nestia. 完成形ロゴ（塗りpath） | `NestiaLogo.tsx` の final層 |
+| `public/svg/nestia-trace.svg` | nestia. 手書きtraceライン7本 | `NestiaLogo.tsx` のmask trace層 |
+| `public/svg/nestia-subtitle.svg` | 「relaxation & treatment」（subtitleロゴ）のテキストアウトラインpath。静的表示・アニメーションなし | `NestiaSubtitle.tsx` |
+| `public/images/hero-bouquet.svg` | 花+蝶の線画。`butterfly.svg`を実寸トリミング | `HeroVisual.tsx`（Hero左カラム） |
+| `components/hero/NestiaLogo.tsx` | nestia.ロゴのインラインSVG手書きアニメーション（mask・`useId`） | Hero右カラム |
+| `components/hero/NestiaSubtitle.tsx` | 「relaxation & treatment」（subtitleロゴ）の静的表示 | nestia.ロゴ直下 |
+| `components/hero/HeroVisual.tsx` | 左カラム線画のフェード＋ライズイン登場アニメーション | Hero左カラム |
+
 ---
 
 ## 8. プレースホルダー一覧
