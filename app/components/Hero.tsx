@@ -14,38 +14,42 @@ export function Hero() {
   return (
     <section className="hero">
       <div className="hero__inner">
-        <HeroVisual>
-          {/* __HERO_IMAGE__ */}
-          <Image
-            src="/images/hero-bouquet.svg"
-            alt=""
-            aria-hidden="true"
-            width={900}
-            height={450}
-            className="hero__butterfly"
-          />
-        </HeroVisual>
-        {USE_NEW_LOGO ? (
-          <NestiaLogo className="hero__logo" style={{ width: '132px' }} />
-        ) : (
-          <NestiaHandwritingLogo className="hero__logo" style={{ width: '132px' }} />
-        )}
-        <NestiaSubtitle className="hero__subtitle" />
-        <h1 className="hero__title">
-          なんでもない日に、<br />帰ってこられる場所。
-        </h1>
-        <p className="hero__sub">
-          立川駅近くのプライベートリラクゼーションサロン nestia.<br />
-          肩こり、疲れ、眠りの浅さ、なんとなくの不調に。<br />
-          その日の身体と気分に合わせたオーダーメイドケア。
-        </p>
-        <div className="hero__cta">
-          <Button as="a" href={ctaConfig.primary.href} variant="primary">
-            {ctaConfig.primary.label}
-          </Button>
-          <Button as="a" href={ctaConfig.secondary.href} variant="outline">
-            {ctaConfig.secondary.label}
-          </Button>
+        <div className="hero__layout">
+          <HeroVisual className="hero__visual">
+            {/* __HERO_IMAGE__ */}
+            <Image
+              src="/images/hero-bouquet.svg"
+              alt=""
+              aria-hidden="true"
+              width={480}
+              height={507}
+              className="hero__butterfly"
+            />
+          </HeroVisual>
+          <div className="hero__content">
+            <h1 className="hero__title">
+              なんでもない日に、<br />帰ってこられる場所。
+            </h1>
+            {USE_NEW_LOGO ? (
+              <NestiaLogo className="hero__logo" />
+            ) : (
+              <NestiaHandwritingLogo className="hero__logo" style={{ width: '220px' }} />
+            )}
+            <NestiaSubtitle className="hero__subtitle" />
+            <p className="hero__sub">
+              立川駅近くのプライベートリラクゼーションサロン nestia.<br />
+              肩こり、疲れ、眠りの浅さ、なんとなくの不調に。<br />
+              その日の身体と気分に合わせたオーダーメイドケア。
+            </p>
+            <div className="hero__cta">
+              <Button as="a" href={ctaConfig.primary.href} variant="primary">
+                {ctaConfig.primary.label}
+              </Button>
+              <Button as="a" href={ctaConfig.secondary.href} variant="outline">
+                {ctaConfig.secondary.label}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
