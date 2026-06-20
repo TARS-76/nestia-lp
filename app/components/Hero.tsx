@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { CTA as ctaConfig } from '@/lib/cta-config'
 import { Button } from '@/design-system/components/core/Button'
 import { NestiaLogo } from '@/components/hero/NestiaLogo'
+import { NestiaSubtitle } from '@/components/hero/NestiaSubtitle'
 import NestiaHandwritingLogo from '@/components/NestiaHandwritingLogo'
 
 // Temporary switch while verifying the inline-SVG logo migration (see nestia-handwriting-logo-implementation.md, step 9).
@@ -26,6 +27,7 @@ export function Hero() {
         ) : (
           <NestiaHandwritingLogo className="hero__logo" style={{ width: '132px' }} />
         )}
+        <NestiaSubtitle className="hero__subtitle" />
         <h1 className="hero__title">
           なんでもない日に、<br />帰ってこられる場所。
         </h1>
