@@ -3,6 +3,7 @@ import { CTA as ctaConfig } from '@/lib/cta-config'
 import { Button } from '@/design-system/components/core/Button'
 import { NestiaLogo } from '@/components/hero/NestiaLogo'
 import { NestiaSubtitle } from '@/components/hero/NestiaSubtitle'
+import { HeroVisual } from '@/components/hero/HeroVisual'
 import NestiaHandwritingLogo from '@/components/NestiaHandwritingLogo'
 
 // Temporary switch while verifying the inline-SVG logo migration (see nestia-handwriting-logo-implementation.md, step 9).
@@ -13,15 +14,17 @@ export function Hero() {
   return (
     <section className="hero">
       <div className="hero__inner">
-        {/* __HERO_IMAGE__ */}
-        <Image
-          src="/images/butterfly.svg"
-          alt=""
-          aria-hidden="true"
-          width={900}
-          height={450}
-          className="hero__butterfly"
-        />
+        <HeroVisual>
+          {/* __HERO_IMAGE__ */}
+          <Image
+            src="/images/hero-bouquet.svg"
+            alt=""
+            aria-hidden="true"
+            width={900}
+            height={450}
+            className="hero__butterfly"
+          />
+        </HeroVisual>
         {USE_NEW_LOGO ? (
           <NestiaLogo className="hero__logo" style={{ width: '132px' }} />
         ) : (
